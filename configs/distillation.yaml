@@ -17,7 +17,7 @@ dataset:
   split: "main"                       # GSM8K has "main" and "socratic" splits; use "main"
   train_split: "train"                # 7473 samples
   # TODO: if you want to run a quick test, set max_samples to ~100 first
-  max_samples: null                   # null = use full training set; set integer to limit (e.g. 100)
+  max_samples: 100                   # null = use full training set; set integer to limit (e.g. 100)
 
 # --- Output paths ---
 output:
