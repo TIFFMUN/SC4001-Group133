@@ -1,0 +1,42 @@
+# =============================================================================
+# Distillation Configuration
+# Used by: src/distillation/generate_traces.py, filter_traces.py, build_dataset.py
+# Experiments: D1 (standard), D2 (filtered), D3 (cross-task transfer)
+# =============================================================================
+
+# --- Teacher model (via Groq API) ---
+teacher:
+  model: "llama-3.3-70b-versatile"   # Groq-hosted model ID — check https://console.groq.com for available models
+  temperature: 0.7                    # Higher = more diverse traces; lower = more deterministic
+  max_tokens: 512                     # Max tokens per CoT trace; GSM8K solutions rarely exceed 300
+  requests_per_minute: 30             # Groq free tier rate limit — reduce if you hit 429 errors
+
+# --- Dataset ---
+dataset:
+  name: "openai/gsm8k"
+  split: "main"                       # GSM8K has "main" and "socratic" splits; use "main"
+  train_split: "train"                # 7473 samples
+  # TODO: if you want to run a quick test, set max_samples to ~100 first
+  max_samples: null                   # null = use full training set; set integer to limit (e.g. 100)
+
+# --- Output paths ---
+output:
+  raw_traces: "data/traces/raw_traces.jsonl"          # All generated traces (before filtering)
+  filtered_traces: "data/traces/filtered_traces.jsonl" # D2: only traces with correct final answer
+  dataset_dir: "data/processed/"                       # Final HF Dataset saved here
+
+# --- Dataset split ratios ---
+splits:
+  train: 0.90
+  val: 0.10
+  # Note: test set is always the official GSM8K test split (1319 samples), never touched during training
+
+# --- Prompt template ---
+# The system prompt sent to the teacher for CoT trace generation
+# TODO: experiment with different prompt templates and observe trace quality
+prompt_template: |
+  You are a helpful math tutor. Solve the following problem step by step.
+  Show your reasoning clearly. At the end, write your final answer as:
+  #### <number>
+
+  Problem: {question}

@@ -1,0 +1,50 @@
+# =============================================================================
+# Evaluation Configuration
+# Used by: src/evaluation/eval_gsm8k.py, eval_arc.py, metrics.py
+# Run after each experiment to produce results CSVs
+# =============================================================================
+
+# --- Model to evaluate ---
+# Switch between experiments by changing model_path:
+#   Exp 0/1 (baselines):   use base_model, set checkpoint_path to null
+#   Exp 2 (adaptation):    set checkpoint_path to results/checkpoints/adaptation/
+#   Exp 3 (distillation):  set checkpoint_path to results/checkpoints/distillation/
+#   Exp 4 (filtered):      set checkpoint_path to results/checkpoints/filtered/
+model:
+  base_model: "Qwen/Qwen2.5-0.5B-Instruct"
+  checkpoint_path: null     # null = evaluate base model (Exp 0/1); set path for Exp 2-5
+
+# --- Benchmarks to run ---
+# Set to false to skip a benchmark (saves time during development)
+benchmarks:
+  gsm8k: true
+  arc: true
+
+# --- GSM8K evaluation settings ---
+gsm8k:
+  dataset: "openai/gsm8k"
+  split: "test"             # 1319 samples — never used during training
+  # TODO: set max_samples to ~100 for quick sanity checks during development
+  max_samples: null         # null = full test set
+  batch_size: 8
+
+# --- ARC evaluation settings ---
+# Used for Exp 5 (D3): cross-task transfer
+arc:
+  dataset: "allenai/ai2_arc"
+  config: "ARC-Challenge"   # ARC-Challenge (harder) vs ARC-Easy
+  split: "test"             # 1172 samples
+  max_samples: null
+  batch_size: 8
+
+# --- Generation settings ---
+generation:
+  max_new_tokens: 256
+  do_sample: false          # Greedy decoding for reproducibility
+  temperature: 1.0          # Ignored when do_sample is false
+
+# --- Output ---
+output:
+  results_dir: "results/"
+  # TODO: name this file descriptively per run, e.g. exp2_adaptation_gsm8k.csv
+  results_file: "results.csv"

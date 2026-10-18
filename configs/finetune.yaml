@@ -1,0 +1,67 @@
+# =============================================================================
+# Fine-tuning Configuration
+# Used by: src/training/finetune.py
+# Controls both:
+#   - Exp 2 (A1): LoRA adaptation on GSM8K human labels
+#   - Exp 3 (D1): LoRA on all teacher CoT traces
+#   - Exp 4 (D2): LoRA on filtered teacher CoT traces
+#
+# For ablations, change ONE field at a time and re-run:
+#   A2 (rank sweep):      change lora.rank ∈ {4, 8, 16, 32}
+#   A3 (data size sweep): change data.train_fraction ∈ {0.1, 0.25, 0.5, 1.0}
+# =============================================================================
+
+# --- Student model ---
+model:
+  name: "Qwen/Qwen2.5-0.5B-Instruct"
+  # TODO: if Colab runs out of memory, try load_in_4bit: true (requires bitsandbytes)
+  load_in_4bit: false
+  load_in_8bit: false
+
+# --- LoRA configuration ---
+# A2 ablation: change rank here and re-run — save each checkpoint to a different output_dir
+lora:
+  rank: 16              # r — number of low-rank matrices; sweep {4, 8, 16, 32} for A2
+  alpha: 32             # lora_alpha — scaling factor; keep alpha = 2 * rank as a rule of thumb
+  dropout: 0.05
+  target_modules:       # Linear layers to apply LoRA to (Qwen2.5 architecture)
+    - "q_proj"
+    - "k_proj"
+    - "v_proj"
+    - "o_proj"
+    - "gate_proj"
+    - "up_proj"
+    - "down_proj"
+
+# --- Training hyperparameters ---
+training:
+  output_dir: "results/checkpoints/lora_r16"   # TODO: change this per run, e.g. lora_r4, lora_r8
+  num_epochs: 3
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 4
+  gradient_accumulation_steps: 4               # Effective batch size = 4 * 4 = 16
+  learning_rate: 2.0e-4
+  lr_scheduler_type: "cosine"
+  warmup_ratio: 0.05
+  max_seq_length: 512
+  logging_steps: 50
+  eval_steps: 200
+  save_steps: 200
+  save_total_limit: 2                          # Keep only 2 checkpoints to save Drive space
+  fp16: true                                   # Use mixed precision on Colab T4/A100
+  seed: 42
+
+# --- Data configuration ---
+data:
+  # Set mode to switch between experiments:
+  #   "adaptation"   → Exp 2 (A1): trains on GSM8K human-labelled data
+  #   "distillation" → Exp 3 (D1): trains on all teacher traces
+  #   "filtered"     → Exp 4 (D2): trains on answer-verified teacher traces
+  mode: "adaptation"
+
+  # A3 ablation: change this fraction and re-run
+  # 1.0 = full training set, 0.1 = 10% of training set
+  train_fraction: 1.0
+
+  # Paths — only used when mode is "distillation" or "filtered"
+  distillation_dataset_dir: "data/processed/"

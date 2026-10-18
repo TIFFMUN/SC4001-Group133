@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment variables — never commit secrets
+.env
+
+# HuggingFace cache (large, re-downloadable)
+~/.cache/huggingface/
+
+# Model checkpoints and weights (store on Google Drive instead)
+results/checkpoints/
+results/models/
+*.pt
+*.bin
+*.safetensors
+
+# Distillation traces (generated, not source code)
+data/traces/
+data/raw/
+data/*.jsonl
+data/*.json
+
+# Jupyter notebook checkpoints
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Results CSVs and plots (store on Google Drive, commit only final versions)
+results/*.csv
+results/*.png
+results/*.pdf
+
+# macOS
+.DS_Store
+
+# IDEs
+.idea/
+.vscode/
+*.swp
