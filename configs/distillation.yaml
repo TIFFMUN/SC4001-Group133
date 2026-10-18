@@ -6,7 +6,7 @@
 
 # --- Teacher model (via Groq API) ---
 teacher:
-  model: "llama-3.3-70b-versatile"   # Groq-hosted model ID — check https://console.groq.com for available models
+  model: "qwen/qwen3.8-27b"           # Groq-hosted model ID — confirmed available on this account
   temperature: 0.7                    # Higher = more diverse traces; lower = more deterministic
   max_tokens: 512                     # Max tokens per CoT trace; GSM8K solutions rarely exceed 300
   requests_per_minute: 30             # Groq free tier rate limit — reduce if you hit 429 errors
