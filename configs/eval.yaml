@@ -48,3 +48,26 @@ output:
   results_dir: "results/"
   # TODO: name this file descriptively per run, e.g. exp2_adaptation_gsm8k.csv
   results_file: "results.csv"
+
+# --- Exp 6: Inference-gated budget router ---
+# Run ONLY after Exps 0–5 are complete. Set checkpoint_path to the best checkpoint
+# (Exp 4: filtered distillation) before enabling.
+#
+# Usage: python -m src.evaluation.eval_router --experiment exp6_router
+#
+router:
+  enabled: false                          # set true when ready to run Exp 6
+  checkpoint_path: null                   # e.g. "results/checkpoints/filtered/"
+
+  # Generation profiles — easy prompts get the fast profile, hard get the budget profile
+  easy_max_tokens: 128                    # tight cap; greedy decode
+  hard_max_tokens: 300                    # full CoT budget; greedy decode
+
+  # Threshold sweep: thresholds are sampled between p10 and p90 of the complexity
+  # score distribution. Override manually if the auto-calibration range is too narrow.
+  threshold_min: null                     # null = auto (10th percentile of scores)
+  threshold_max: null                     # null = auto (90th percentile of scores)
+  threshold_steps: 10                     # number of threshold values to try
+
+  # Sample limit for the sweep (set lower for quick sanity checks, null for full eval)
+  max_samples: 200
