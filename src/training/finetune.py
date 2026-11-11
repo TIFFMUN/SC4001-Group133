@@ -217,7 +217,7 @@ def train(config_path: str = "configs/finetune.yaml") -> None:
         gradient_accumulation_steps=train_cfg["gradient_accumulation_steps"],
         learning_rate=train_cfg["learning_rate"],
         lr_scheduler_type=train_cfg["lr_scheduler_type"],
-        warmup_ratio=train_cfg["warmup_ratio"],
+        warmup_steps=int(train_cfg["warmup_ratio"] * train_cfg["num_epochs"] * 100),
         max_seq_length=train_cfg["max_seq_length"],
         logging_steps=train_cfg["logging_steps"],
         eval_strategy="steps",
@@ -228,7 +228,7 @@ def train(config_path: str = "configs/finetune.yaml") -> None:
         fp16=train_cfg["fp16"],
         load_best_model_at_end=True,
         metric_for_best_model="eval_loss",
-        report_to="none",   # set to "wandb" if you want experiment tracking
+        report_to="none",
         seed=train_cfg["seed"],
     )
 
