@@ -4,6 +4,7 @@ peft>=0.13.0
 trl>=0.11.0
 datasets>=3.0.0
 accelerate>=1.0.0
+torchao>=0.16.0
 
 # PyTorch — install separately on Colab (pre-installed), listed here for Docker/local
 torch>=2.3.0
