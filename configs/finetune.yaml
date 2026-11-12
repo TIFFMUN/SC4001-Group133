@@ -65,3 +65,6 @@ data:
 
   # Paths — only used when mode is "distillation" or "filtered"
   distillation_dataset_dir: "data/processed/"
+
+  # Cache dir for pre-processed datasets (avoids re-running map() on restart)
+  cache_dir: "data/cache"

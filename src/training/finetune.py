@@ -70,7 +70,15 @@ def load_adaptation_data(cfg: dict) -> tuple:
             )
         }
 
-    train_data = train_data.map(format_sample, remove_columns=train_data.column_names)
+    # num_proc speeds up formatting; cache_file_name avoids re-running on subsequent calls
+    cache_file = Path(cfg["data"].get("cache_dir", "data/cache")) / "gsm8k_formatted.arrow"
+    cache_file.parent.mkdir(parents=True, exist_ok=True)
+    train_data = train_data.map(
+        format_sample,
+        remove_columns=train_data.column_names,
+        num_proc=4,
+        cache_file_name=str(cache_file),
+    )
 
     # Use 10% of training data as validation
     split = train_data.train_test_split(test_size=0.1, seed=cfg["training"]["seed"])
@@ -140,6 +148,7 @@ def load_model_and_tokenizer(cfg: dict):
         quantization_config=bnb_config,
         torch_dtype=torch.float16 if not (load_in_4bit or load_in_8bit) else None,
         device_map="auto",
+        low_cpu_mem_usage=True,
     )
 
     return model, tokenizer
