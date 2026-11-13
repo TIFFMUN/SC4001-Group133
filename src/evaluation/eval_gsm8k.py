@@ -26,6 +26,7 @@ from tqdm import tqdm
 
 from src.distillation.filter_traces import extract_answer, answers_match
 from src.evaluation.metrics import compute_latency, compute_summary_stats, save_results, print_summary
+from src.baselines.cot_prompting import build_few_shot_prompt
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
@@ -88,6 +89,7 @@ def evaluate_gsm8k(
     experiment_name: str = "unnamed",
     max_samples: int | None = None,
     checkpoint_override: str | None = None,
+    few_shot: bool = False,
 ) -> list[dict]:
     """
     Main entry point. Runs evaluation on the full GSM8K test set.
@@ -97,6 +99,7 @@ def evaluate_gsm8k(
         experiment_name:     used for naming the output CSV, e.g. "exp2_adaptation_r16"
         max_samples:         override max_samples for quick testing
         checkpoint_override: optional path to trained checkpoint
+        few_shot:            whether to use few-shot CoT prompting (Exp 1)
 
     Returns:
         List of per-sample result dicts.
@@ -140,7 +143,11 @@ def evaluate_gsm8k(
             question = sample["question"]
             ground_truth = sample["answer"]
 
-            prompt = build_prompt(question, tokenizer)
+            prompt = (
+                build_few_shot_prompt(question, tokenizer)
+                if few_shot
+                else build_prompt(question, tokenizer)
+            )
             inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
             input_len = inputs["input_ids"].shape[1]
 
@@ -188,6 +195,8 @@ if __name__ == "__main__":
                         help="Limit number of test samples (useful for quick sanity checks).")
     parser.add_argument("--checkpoint", type=str, default=None,
                         help="Path to trained checkpoint (e.g. results/checkpoints/lora_r16).")
+    parser.add_argument("--few_shot", action="store_true",
+                        help="Use 4-shot CoT prompting instead of zero-shot (Exp 1).")
     parser.add_argument("--config", type=str, default="configs/eval.yaml")
     args = parser.parse_args()
 
@@ -196,4 +205,5 @@ if __name__ == "__main__":
         experiment_name=args.experiment,
         max_samples=args.max_samples,
         checkpoint_override=args.checkpoint,
+        few_shot=args.few_shot,
     )
