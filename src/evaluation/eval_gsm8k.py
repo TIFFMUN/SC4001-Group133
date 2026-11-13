@@ -115,10 +115,15 @@ def evaluate_gsm8k(
 
     # --- Load dataset ---
     logger.info("Loading GSM8K test set...")
-    dataset = load_dataset(gsm8k_cfg["dataset"], gsm8k_cfg["split"])
+    subset = gsm8k_cfg.get("subset", "main")
+    split_name = gsm8k_cfg.get("split", "test")
+    if split_name in ["main", "socratic"]:
+        dataset = load_dataset(gsm8k_cfg["dataset"], split_name)
+        test_data = dataset["test"]
+    else:
+        dataset = load_dataset(gsm8k_cfg["dataset"], subset)
+        test_data = dataset[split_name] if split_name in dataset else dataset["test"]
 
-    # GSM8K "test" is a key in the loaded dict
-    test_data = dataset["test"]
     n_samples = max_samples or gsm8k_cfg.get("max_samples")
     if n_samples:
         test_data = test_data.select(range(min(n_samples, len(test_data))))
