@@ -15,14 +15,15 @@ Can targeted reasoning-chain distillation from a larger model improve a small mo
 
 ## Experiments
 
-| Exp | Strategy | Description | Benchmark |
-|---|---|---|---|
-| 0 | Baseline | Zero-shot prompting | GSM8K + ARC |
-| 1 | Baseline | Few-shot CoT prompting | GSM8K + ARC |
-| 2 | Adaptation (A1) | LoRA fine-tune on GSM8K human labels | GSM8K |
-| 3 | Distillation (D1) | LoRA fine-tune on all teacher CoT traces | GSM8K |
-| 4 | Distillation (D2) | LoRA fine-tune on filtered (correct) traces | GSM8K |
-| 5 | Transfer (D3) | Exp 4 model evaluated on ARC — cross-task transfer | ARC |
+| Exp | Strategy | Description | Benchmark | Status / Result |
+|---|---|---|---|---|
+| 0 | Baseline | Zero-shot prompting | GSM8K | **29.00%** |
+| 1 | Baseline | Few-shot CoT prompting (4 shots) | GSM8K | **23.00%** |
+| 2 | Adaptation (A1) | LoRA fine-tune on GSM8K human labels ($r=16$) | GSM8K | **35.00%** |
+| 3 | Distillation (D1) | LoRA fine-tune on all teacher CoT traces | GSM8K | Pending |
+| 4 | Distillation (D2) | LoRA fine-tune on filtered (correct) traces | GSM8K | Pending |
+| 5 | Transfer (D3) | Exp 4 model evaluated on ARC — cross-task transfer | ARC | Pending |
+| 6 | Inference Router | Difficulty-gated budget routing (Pareto curve) | GSM8K | **35.00% → 3.00%** |
 
 **Ablations:** A2 (LoRA rank ∈ {4,8,16,32}), A3 (data size ∈ {10,25,50,100%})
 
