@@ -22,7 +22,7 @@ Can targeted reasoning-chain distillation from a larger model improve a small mo
 | 2 | Adaptation (A1) | LoRA fine-tune on GSM8K human labels ($r=16$) | GSM8K | **35.00%** |
 | 3 | Distillation (D1) | LoRA fine-tune on all teacher CoT traces | GSM8K | Pending |
 | 4 | Distillation (D2) | LoRA fine-tune on filtered (correct) traces | GSM8K | Pending |
-| 5 | Transfer (D3) | Exp 4 model evaluated on ARC — cross-task transfer | ARC | Pending |
+| 5 | Transfer (D3) | LoRA model evaluated on ARC — cross-task transfer | ARC-Challenge | **37.00%** |
 | 6 | Inference Router | Difficulty-gated budget routing (Pareto curve) | GSM8K | **35.00% → 3.00%** |
 
 **Ablations:** A2 (LoRA rank ∈ {4,8,16,32}), A3 (data size ∈ {10,25,50,100%})
@@ -78,10 +78,21 @@ Edit `configs/finetune.yaml` to set `data.mode`, then run notebook `02_finetune_
 | Exp 4 | `filtered` | `results/checkpoints/filtered` |
 
 ### Step 3 — Evaluate (Member C)
-Edit `configs/eval.yaml` to set `model.checkpoint_path`, then:
 ```bash
-python -m src.evaluation.eval_gsm8k --experiment exp2_adaptation_r16
-python -m src.evaluation.eval_arc   --experiment exp5_d3_cross_task
+# Evaluate GSM8K Zero-Shot (Exp 0)
+python -m src.evaluation.eval_gsm8k --experiment exp0_zero_shot --max_samples 100
+
+# Evaluate GSM8K 4-Shot CoT (Exp 1)
+python -m src.evaluation.eval_gsm8k --experiment exp1_few_shot --few_shot --max_samples 100
+
+# Evaluate GSM8K LoRA Adaptation (Exp 2)
+python -m src.evaluation.eval_gsm8k --experiment exp2_adaptation_r16 --checkpoint results/checkpoints/lora_r16 --max_samples 100
+
+# Evaluate ARC-Challenge Cross-Task Transfer (Exp 5)
+python -m src.evaluation.eval_arc   --experiment exp5_d3_cross_task --checkpoint results/checkpoints/lora_r16 --max_samples 100
+
+# Evaluate Inference Budget Router Sweep (Exp 6)
+python -m src.evaluation.eval_router --experiment exp6_router --checkpoint results/checkpoints/lora_r16 --max_samples 100
 ```
 
 Or run `notebooks/03_evaluate_all.ipynb` on Colab.
