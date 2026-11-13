@@ -38,14 +38,14 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 logger = logging.getLogger(__name__)
 
 
-def load_model_for_routing(cfg: dict):
+def load_model_for_routing(cfg: dict, checkpoint_override: str | None = None):
     """
     Load model for routing. Mirrors eval_gsm8k.load_model() but reads from the
     router: section of eval.yaml rather than the top-level model: section.
     """
     base_model_name = cfg["model"]["base_model"]
     router_cfg = cfg.get("router", {})
-    checkpoint_path = router_cfg.get("checkpoint_path") or cfg["model"].get("checkpoint_path")
+    checkpoint_path = checkpoint_override or router_cfg.get("checkpoint_path") or cfg["model"].get("checkpoint_path")
 
     tokenizer = AutoTokenizer.from_pretrained(
         checkpoint_path if checkpoint_path else base_model_name
@@ -162,14 +162,16 @@ def run_router_sweep(
     config_path: str = "configs/eval.yaml",
     experiment_name: str = "exp6_router",
     max_samples: int | None = None,
+    checkpoint_override: str | None = None,
 ) -> pd.DataFrame:
     """
     Main entry point. Sweeps the routing threshold and saves a Pareto-ready CSV.
 
     Args:
-        config_path:     path to eval.yaml (must have router: section)
-        experiment_name: prefix for output CSV names
-        max_samples:     override max_samples for quick testing
+        config_path:         path to eval.yaml (must have router: section)
+        experiment_name:     prefix for output CSV names
+        max_samples:         override max_samples for quick testing
+        checkpoint_override: optional path to trained LoRA checkpoint
 
     Returns:
         DataFrame with one row per threshold: (threshold, accuracy, mean_token_count, ...)
@@ -178,7 +180,7 @@ def run_router_sweep(
         cfg = yaml.safe_load(f)
 
     router_cfg = cfg.get("router", {})
-    if not router_cfg.get("enabled", False):
+    if not router_cfg.get("enabled", False) and not checkpoint_override:
         logger.warning(
             "router.enabled is false in eval.yaml. "
             "Set router.enabled: true to run Exp 6."
@@ -189,11 +191,11 @@ def run_router_sweep(
 
     # --- Generation profiles ---
     easy_kwargs = {
-        "max_new_tokens": router_cfg.get("easy_max_tokens", 128),
+        "max_new_tokens": router_cfg.get("easy_max_tokens") or 128,
         "do_sample": False,
     }
     hard_kwargs = {
-        "max_new_tokens": router_cfg.get("hard_max_tokens", 300),
+        "max_new_tokens": router_cfg.get("hard_max_tokens") or 300,
         "do_sample": False,
     }
 
@@ -208,15 +210,21 @@ def run_router_sweep(
         logger.info(f"Using {len(test_data)} samples.")
 
     # --- Load model ---
-    model, tokenizer = load_model_for_routing(cfg)
+    model, tokenizer = load_model_for_routing(cfg, checkpoint_override=checkpoint_override)
 
     # --- Dry-run: collect complexity scores to calibrate threshold grid ---
     logger.info("Computing complexity scores for threshold calibration...")
     scores = collect_complexity_scores(model, tokenizer, test_data, max_samples=None)
 
-    threshold_min = router_cfg.get("threshold_min", float(np.percentile(scores, 10)))
-    threshold_max = router_cfg.get("threshold_max", float(np.percentile(scores, 90)))
-    n_thresholds = router_cfg.get("threshold_steps", 10)
+    threshold_min = router_cfg.get("threshold_min")
+    if threshold_min is None:
+        threshold_min = float(np.percentile(scores, 10))
+
+    threshold_max = router_cfg.get("threshold_max")
+    if threshold_max is None:
+        threshold_max = float(np.percentile(scores, 90))
+
+    n_thresholds = router_cfg.get("threshold_steps") or 10
     thresholds = np.linspace(threshold_min, threshold_max, n_thresholds).tolist()
 
     # Add anchor points: all-easy (threshold → ∞) and all-hard (threshold → -∞)
@@ -288,6 +296,8 @@ if __name__ == "__main__":
                         help="Prefix for output CSV filenames.")
     parser.add_argument("--max_samples", type=int, default=None,
                         help="Limit number of test samples (useful for quick sanity checks).")
+    parser.add_argument("--checkpoint", type=str, default=None,
+                        help="Path to trained checkpoint (e.g. results/checkpoints/lora_r16).")
     parser.add_argument("--config", type=str, default="configs/eval.yaml")
     args = parser.parse_args()
 
@@ -295,4 +305,5 @@ if __name__ == "__main__":
         config_path=args.config,
         experiment_name=args.experiment,
         max_samples=args.max_samples,
+        checkpoint_override=args.checkpoint,
     )
