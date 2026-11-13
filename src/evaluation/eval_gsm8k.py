@@ -42,9 +42,7 @@ def load_model(cfg: dict, checkpoint_override: str | None = None):
     base_model_name = cfg["model"]["base_model"]
     checkpoint_path = checkpoint_override or cfg["model"].get("checkpoint_path")
 
-    tokenizer = AutoTokenizer.from_pretrained(
-        checkpoint_path if checkpoint_path else base_model_name
-    )
+    tokenizer = AutoTokenizer.from_pretrained(base_model_name)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
@@ -54,10 +52,15 @@ def load_model(cfg: dict, checkpoint_override: str | None = None):
         device_map="auto",
     )
 
-    if checkpoint_path:
+    if checkpoint_path and os.path.exists(checkpoint_path):
         logger.info(f"Loading LoRA adapter from {checkpoint_path}")
         model = PeftModel.from_pretrained(model, checkpoint_path)
-        model = model.merge_and_unload()  # merge LoRA weights for faster inference
+        model = model.merge_and_unload()
+    elif checkpoint_path:
+        logger.warning(
+            f"Checkpoint '{checkpoint_path}' not found on disk. "
+            f"Evaluating pre-trained base model '{base_model_name}'."
+        )
 
     model.eval()
     return model, tokenizer
