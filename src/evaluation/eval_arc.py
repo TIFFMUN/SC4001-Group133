@@ -32,10 +32,10 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 logger = logging.getLogger(__name__)
 
 
-def load_model(cfg: dict):
+def load_model(cfg: dict, checkpoint_override: str | None = None):
     """Load base or LoRA-finetuned model. Same logic as eval_gsm8k.py."""
     base_model_name = cfg["model"]["base_model"]
-    checkpoint_path = cfg["model"].get("checkpoint_path")
+    checkpoint_path = checkpoint_override or cfg["model"].get("checkpoint_path")
 
     tokenizer = AutoTokenizer.from_pretrained(
         checkpoint_path if checkpoint_path else base_model_name
@@ -110,13 +110,17 @@ def score_choice(
 def evaluate_arc(
     config_path: str = "configs/eval.yaml",
     experiment_name: str = "unnamed",
+    max_samples: int | None = None,
+    checkpoint_override: str | None = None,
 ) -> list[dict]:
     """
     Main entry point. Runs likelihood-scoring evaluation on ARC-Challenge test set.
 
     Args:
-        config_path:      path to eval.yaml
-        experiment_name:  used for naming the output CSV, e.g. "exp5_d3_cross_task"
+        config_path:         path to eval.yaml
+        experiment_name:     used for naming the output CSV, e.g. "exp5_d3_cross_task"
+        max_samples:         override max_samples for quick testing
+        checkpoint_override: optional path to trained checkpoint
 
     Returns:
         List of per-sample result dicts.
@@ -137,13 +141,13 @@ def evaluate_arc(
     dataset = load_dataset(arc_cfg["dataset"], arc_cfg["config"])
     test_data = dataset["test"]
 
-    max_samples = arc_cfg.get("max_samples")
-    if max_samples:
-        test_data = test_data.select(range(max_samples))
-        logger.info(f"Limiting to {max_samples} samples.")
+    n_samples = max_samples or arc_cfg.get("max_samples")
+    if n_samples:
+        test_data = test_data.select(range(min(n_samples, len(test_data))))
+        logger.info(f"Limiting to {len(test_data)} samples.")
 
     # --- Load model ---
-    model, tokenizer = load_model(cfg)
+    model, tokenizer = load_model(cfg, checkpoint_override=checkpoint_override)
 
     # --- Evaluate ---
     results = []
@@ -202,6 +206,16 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--experiment", type=str, default="exp5_d3_cross_task",
                         help="Descriptive name for this run, used in output filename.")
+    parser.add_argument("--max_samples", type=int, default=None,
+                        help="Limit number of test samples (useful for quick sanity checks).")
+    parser.add_argument("--checkpoint", type=str, default=None,
+                        help="Path to trained checkpoint (e.g. results/checkpoints/lora_r16).")
+    parser.add_argument("--config", type=str, default="configs/eval.yaml")
     args = parser.parse_args()
 
-    evaluate_arc(experiment_name=args.experiment)
+    evaluate_arc(
+        config_path=args.config,
+        experiment_name=args.experiment,
+        max_samples=args.max_samples,
+        checkpoint_override=args.checkpoint,
+    )
