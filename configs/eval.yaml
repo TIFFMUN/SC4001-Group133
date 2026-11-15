@@ -60,8 +60,8 @@ router:
   checkpoint_path: results/checkpoints/filtered  # using filtered (Exp 4) checkpoint
 
   # Generation profiles — easy prompts get the fast profile, hard get the budget profile
-  easy_max_tokens: 128                    # tight cap; greedy decode
-  hard_max_tokens: 300                    # full CoT budget; greedy decode
+  easy_max_tokens: 256                    # tight cap; greedy decode
+  hard_max_tokens: 600                    # full CoT budget; greedy decode
 
   # Threshold sweep: thresholds are sampled between p10 and p90 of the complexity
   # score distribution. Override manually if the auto-calibration range is too narrow.
