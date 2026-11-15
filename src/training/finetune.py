@@ -181,16 +181,23 @@ def build_lora_config(cfg: dict) -> LoraConfig:
 # Training
 # =============================================================================
 
-def train(config_path: str = "configs/finetune.yaml") -> None:
+def train(config_path: str = "configs/finetune.yaml", mode_override: str | None = None, output_dir_override: str | None = None) -> None:
     """
     Main entry point. Loads config, data, model, and runs SFTTrainer.
 
-    To switch experiments, change `data.mode` in finetune.yaml:
+    To switch experiments, change `data.mode` in finetune.yaml or pass mode_override:
         "adaptation"   → Exp 2
         "distillation" → Exp 3
         "filtered"     → Exp 4
     """
     cfg = load_config(config_path)
+    if mode_override:
+        cfg["data"]["mode"] = mode_override
+        if not output_dir_override:
+            cfg["training"]["output_dir"] = f"results/checkpoints/{mode_override}"
+    if output_dir_override:
+        cfg["training"]["output_dir"] = output_dir_override
+
     set_seed(cfg["training"]["seed"])
     device = get_device()
     logger.info(f"Training device: {device}")
@@ -297,4 +304,12 @@ def train(config_path: str = "configs/finetune.yaml") -> None:
 
 
 if __name__ == "__main__":
-    train()
+    import argparse
+    parser = argparse.ArgumentParser(description="LoRA fine-tuning for Qwen2.5-0.5B-Instruct.")
+    parser.add_argument("--config", type=str, default="configs/finetune.yaml", help="Path to YAML config.")
+    parser.add_argument("--mode", type=str, default=None, choices=["adaptation", "distillation", "filtered"],
+                        help="Data mode: 'adaptation' (Exp 2), 'distillation' (Exp 3), 'filtered' (Exp 4).")
+    parser.add_argument("--output_dir", type=str, default=None, help="Directory to save checkpoints.")
+    args = parser.parse_args()
+
+    train(config_path=args.config, mode_override=args.mode, output_dir_override=args.output_dir)
