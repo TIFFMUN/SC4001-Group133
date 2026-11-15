@@ -12,7 +12,7 @@
 #   Exp 4 (filtered):      set checkpoint_path to results/checkpoints/filtered/
 model:
   base_model: "Qwen/Qwen2.5-0.5B-Instruct"
-  checkpoint_path: null     # null = evaluate base model (Exp 0/1); set path for Exp 2-5
+  checkpoint_path: results/checkpoints/distillation     # null = evaluate base model (Exp 0/1); set path for Exp 2-5
 
 # --- Benchmarks to run ---
 # Set to false to skip a benchmark (saves time during development)
@@ -25,7 +25,7 @@ gsm8k:
   dataset: "openai/gsm8k"
   split: "test"             # 1319 samples — never used during training
   # TODO: set max_samples to ~100 for quick sanity checks during development
-  max_samples: null         # null = full test set
+  max_samples: 100          # null = full test set
   batch_size: 8
 
 # --- ARC evaluation settings ---
