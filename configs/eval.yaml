@@ -39,7 +39,7 @@ arc:
 
 # --- Generation settings ---
 generation:
-  max_new_tokens: 540
+  max_new_tokens: 600
   do_sample: false          # Greedy decoding for reproducibility
   temperature: 1.0          # Ignored when do_sample is false
 
