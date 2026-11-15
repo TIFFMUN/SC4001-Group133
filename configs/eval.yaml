@@ -56,8 +56,8 @@ output:
 # Usage: python -m src.evaluation.eval_router --experiment exp6_router
 #
 router:
-  enabled: false                          # set true when ready to run Exp 6
-  checkpoint_path: null                   # e.g. "results/checkpoints/filtered/"
+  enabled: true                           # set true when ready to run Exp 6
+  checkpoint_path: results/checkpoints/filtered  # using filtered (Exp 4) checkpoint
 
   # Generation profiles — easy prompts get the fast profile, hard get the budget profile
   easy_max_tokens: 128                    # tight cap; greedy decode
