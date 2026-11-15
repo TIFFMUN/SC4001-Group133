@@ -102,6 +102,73 @@ def build_few_shot_prompt(question: str, tokenizer) -> str:
     )
 
 
+def build_one_shot_prompt(question: str, tokenizer) -> str:
+    """1-shot CoT — single example to show format without overwhelming small model context."""
+    example = FEW_SHOT_EXAMPLES[0]
+    full_user_message = (
+        f"Example:\nQuestion: {example['question']}\nSolution: {example['answer']}\n\n"
+        f"Now solve this problem step by step:\nQuestion: {question}"
+    )
+    messages = [
+        {
+            "role": "system",
+            "content": "You are a helpful math tutor. Solve problems step by step. "
+                       "At the end, write your final answer as: #### <number>",
+        },
+        {"role": "user", "content": full_user_message},
+    ]
+    return tokenizer.apply_chat_template(
+        messages, tokenize=False, add_generation_prompt=True
+    )
+
+
+def build_zero_shot_cot_prompt(question: str, tokenizer) -> str:
+    """Zero-shot CoT — adds 'Let's think step by step' trigger, no examples."""
+    messages = [
+        {
+            "role": "system",
+            "content": "You are a helpful math tutor. Solve problems step by step. "
+                       "At the end, write your final answer as: #### <number>",
+        },
+        {"role": "user", "content": f"{question}\n\nLet's think step by step."},
+    ]
+    return tokenizer.apply_chat_template(
+        messages, tokenize=False, add_generation_prompt=True
+    )
+
+
+def build_concise_prompt(question: str, tokenizer) -> str:
+    """Simpler system prompt — avoids verbose 'math tutor' framing that wastes tokens."""
+    messages = [
+        {
+            "role": "system",
+            "content": "Solve the math problem. Be concise. End with #### <number>",
+        },
+        {"role": "user", "content": question},
+    ]
+    return tokenizer.apply_chat_template(
+        messages, tokenize=False, add_generation_prompt=True
+    )
+
+
+def build_format_reinforced_prompt(question: str, tokenizer) -> str:
+    """Repeats the format instruction in the user message — small models forget system prompts."""
+    messages = [
+        {
+            "role": "system",
+            "content": "You are a helpful math tutor. Solve problems step by step. "
+                       "At the end, write your final answer as: #### <number>",
+        },
+        {
+            "role": "user",
+            "content": f"{question}\nSolve step by step and end your answer with #### <number>:",
+        },
+    ]
+    return tokenizer.apply_chat_template(
+        messages, tokenize=False, add_generation_prompt=True
+    )
+
+
 def run_baseline(
     mode: str = "zero_shot",
     dataset_name: str = "gsm8k",
