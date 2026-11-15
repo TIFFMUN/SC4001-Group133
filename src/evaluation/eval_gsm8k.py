@@ -94,6 +94,7 @@ def evaluate_gsm8k(
     max_samples: int | None = None,
     checkpoint_override: str | None = None,
     few_shot: bool = False,
+    max_new_tokens: int | None = None,
 ) -> list[dict]:
     """
     Main entry point. Runs evaluation on the full GSM8K test set.
@@ -104,6 +105,7 @@ def evaluate_gsm8k(
         max_samples:         override max_samples for quick testing
         checkpoint_override: optional path to trained checkpoint
         few_shot:            whether to use few-shot CoT prompting (Exp 1)
+        max_new_tokens:      optional override for max generation tokens (e.g. 540)
 
     Returns:
         List of per-sample result dicts.
@@ -117,6 +119,9 @@ def evaluate_gsm8k(
 
     gsm8k_cfg = cfg["gsm8k"]
     gen_cfg = cfg["generation"]
+    if max_new_tokens is not None:
+        gen_cfg["max_new_tokens"] = max_new_tokens
+        logger.info(f"Overriding max_new_tokens to {max_new_tokens}")
     output_dir = Path(cfg["output"]["results_dir"])
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -208,6 +213,8 @@ if __name__ == "__main__":
                         help="Path to trained checkpoint (e.g. results/checkpoints/lora_r16).")
     parser.add_argument("--few_shot", action="store_true",
                         help="Use 4-shot CoT prompting instead of zero-shot (Exp 1).")
+    parser.add_argument("--max_new_tokens", type=int, default=None,
+                        help="Override maximum new tokens to generate (e.g. 540).")
     parser.add_argument("--config", type=str, default="configs/eval.yaml")
     args = parser.parse_args()
 
@@ -217,4 +224,5 @@ if __name__ == "__main__":
         max_samples=args.max_samples,
         checkpoint_override=args.checkpoint,
         few_shot=args.few_shot,
+        max_new_tokens=args.max_new_tokens,
     )
