@@ -1,0 +1,8 @@
+{
+  "experiment": "exp0_zero_shot",
+  "accuracy": 0.29,
+  "mean_latency_ms": 11018.79,
+  "median_latency_ms": 11587.84,
+  "mean_token_count": 241.85,
+  "n_samples": 100
+}

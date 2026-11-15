@@ -1,0 +1,9 @@
+{
+  "experiment": "exp2_adaptation",
+  "accuracy": 0.35,
+  "mean_latency_ms": 12036.4,
+  "median_latency_ms": null,
+  "mean_token_count": 265.8,
+  "n_samples": 100,
+  "note": "stats from report draft, no local CSV"
+}

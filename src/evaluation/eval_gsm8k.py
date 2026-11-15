@@ -186,6 +186,13 @@ def evaluate_gsm8k(
     stats = compute_summary_stats(results)
     print_summary(experiment_name, stats)
 
+    import json
+    stats_path = output_dir / "summary_results" / f"{experiment_name}_gsm8k_summary.json"
+    stats_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(stats_path, "w") as f:
+        json.dump({"experiment": experiment_name, **stats}, f, indent=2)
+    logger.info(f"Summary stats saved to {stats_path}")
+
     return results
 
 
