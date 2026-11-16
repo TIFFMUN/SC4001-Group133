@@ -368,7 +368,7 @@ def build_word_report(output_path: Path):
     doc.add_paragraph(
         "The routing decision rule allocates generation parameters according to threshold θ:\n"
         "• If S(x) < θ: Route to 'Easy Profile' (Max new tokens = 128, greedy decoding)\n"
-        "• If S(x) >= θ: Route to 'Hard Profile' (Max new tokens = 600, greedy decoding)\n"
+        "• If S(x) >= θ: Route to 'Hard Profile' (Max new tokens = 300 / 600, greedy decoding)\n"
         "By varying θ across the empirical complexity distribution, we trace the full Pareto frontier between compute cost and task accuracy."
     )
 
@@ -557,7 +557,7 @@ def build_word_report(output_path: Path):
 
     p_cap2 = doc.add_paragraph()
     p_cap2.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    r_cap2 = p_cap2.add_run("Table 3: Inference budget router sweep across 12 complexity threshold values on GSM8K.")
+    r_cap2 = p_cap2.add_run("Table 3: Inference budget router sweep across 12 complexity threshold values on GSM8K (evaluated with 128-token Easy and 300-token Hard profiles).")
     r_cap2.font.size = Pt(8.0)
     r_cap2.italic = True
     r_cap2.font.color.rgb = RGBColor(0x55, 0x55, 0x55)
