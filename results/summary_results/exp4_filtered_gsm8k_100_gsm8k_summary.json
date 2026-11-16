@@ -1,0 +1,8 @@
+{
+  "experiment": "exp4_filtered_gsm8k_100",
+  "accuracy": 0.15,
+  "mean_latency_ms": 7721.61,
+  "median_latency_ms": 347.87,
+  "mean_token_count": 181.88,
+  "n_samples": 100
+}

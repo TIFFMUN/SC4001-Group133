@@ -4,7 +4,7 @@ generate_report_plots.py
 Generates publication-grade figures for the SC4001 Group 133 report:
 1. Figure 1: Training and Validation Loss Convergence (from trainer_state.json)
 2. Figure 2: The Exp 6 Budget Router Pareto Frontier (from exp6_router_sweep.csv)
-3. Figure 3: Comparative Strategy and Cross-Task Performance (Exp 0, 1, 2, 5)
+3. Figure 3: Comparative Strategy and Scaling Performance (Exp 0, 1, 2, 3, 4, 5)
 4. Figure 4: Qualitative Failure Case Taxonomy Breakdown
 """
 
@@ -122,29 +122,61 @@ def plot_pareto_frontier():
 
 
 def plot_strategy_comparison():
-    strategies = [
-        "Exp 1: Few-Shot CoT\n(GSM8K)",
-        "Exp 0: Zero-Shot Base\n(GSM8K)",
-        "Exp 2: LoRA Adaptation\n(GSM8K)",
-        "Exp 5: Cross-Task Transfer\n(ARC-Challenge)"
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9.5, 4.0), dpi=300)
+
+    # Panel A: Phase 1 (100 samples, 256 tokens) vs Phase 2 (500 samples, 600 tokens)
+    categories = ["Exp 0: Zero-Shot", "Exp 2: LoRA Adaptation"]
+    acc_100 = [29.0, 35.0]
+    acc_500 = [46.0, 31.2]
+
+    x = np.arange(len(categories))
+    width = 0.35
+
+    rects1 = ax1.bar(x - width/2, acc_100, width, label="Phase 1: 100 samples (256 tok cap)",
+                     color="#90A4AE", edgecolor="#222222", linewidth=0.8)
+    rects2 = ax1.bar(x + width/2, acc_500, width, label="Phase 2: 500 samples (600 tok budget)",
+                     color="#1B365D", edgecolor="#222222", linewidth=0.8)
+
+    for rect in rects1:
+        h = rect.get_height()
+        ax1.text(rect.get_x() + rect.get_width()/2.0, h + 0.8, f"{h:.1f}%",
+                 ha="center", va="bottom", fontsize=9, fontweight="bold")
+    for rect in rects2:
+        h = rect.get_height()
+        ax1.text(rect.get_x() + rect.get_width()/2.0, h + 0.8, f"{h:.1f}%",
+                 ha="center", va="bottom", fontsize=9, fontweight="bold")
+
+    ax1.set_ylabel("Accuracy (%)")
+    ax1.set_title("(a) Impact of Token Budget & Sample Scaling")
+    ax1.set_xticks(x)
+    ax1.set_xticklabels(categories)
+    ax1.set_ylim(0, 55)
+    ax1.grid(axis="y", linestyle=":", alpha=0.6)
+    ax1.legend(loc="upper left", fontsize=8.5)
+
+    # Panel B: Full Scale Comparison Across All Strategies (500+ samples, 600 tokens)
+    strats = [
+        "Exp 0\n(Zero-Shot)",
+        "Exp 2\n(LoRA SFT)",
+        "Exp 4\n(Distill Filt.)",
+        "Exp 3\n(Distill All)",
+        "Exp 5\n(ARC Transfer)"
     ]
-    accuracies = [23.00, 29.00, 35.00, 37.00]
-    colors = ["#90A4AE", "#64B5F6", "#1B365D", "#FFB300"]
+    accs = [46.00, 31.20, 35.80, 40.80, 33.62]
+    colors = ["#64B5F6", "#E05A47", "#81C784", "#2E7D32", "#FFB300"]
 
-    fig, ax = plt.subplots(figsize=(6.5, 3.8), dpi=300)
-    bars = ax.bar(strategies, accuracies, color=colors, width=0.55, edgecolor="#222222", linewidth=0.8)
+    bars = ax2.bar(strats, accs, color=colors, width=0.55, edgecolor="#222222", linewidth=0.8)
+    for b in bars:
+        h = b.get_height()
+        ax2.text(b.get_x() + b.get_width()/2.0, h + 0.8, f"{h:.1f}%",
+                 ha="center", va="bottom", fontsize=9, fontweight="bold")
 
-    for bar in bars:
-        h = bar.get_height()
-        ax.text(bar.get_x() + bar.get_width() / 2.0, h + 0.8, f"{h:.1f}%",
-                ha="center", va="bottom", fontweight="bold", fontsize=9.5)
+    ax2.set_ylabel("Accuracy (%)")
+    ax2.set_title("(b) Full Strategy Benchmark (500+ samples, 600 tok)")
+    ax2.set_ylim(0, 55)
+    ax2.grid(axis="y", linestyle=":", alpha=0.6)
 
-    ax.set_ylim(0, 45)
-    ax.set_title("Comparative Accuracy Across Prompting, Adaptation, and Transfer")
-    ax.set_ylabel("Benchmark Accuracy (%)")
-    ax.grid(axis="y", linestyle=":", alpha=0.6)
     plt.tight_layout()
-
     out_file = plots_dir / "fig3_strategy_comparison.png"
     plt.savefig(out_file)
     plt.close()
@@ -153,7 +185,7 @@ def plot_strategy_comparison():
 
 def plot_failure_taxonomy():
     labels = [
-        "Truncation Collapse\n(Easy Cap 128 tokens)",
+        "Truncation Collapse\n(Artificial Token Cap)",
         "Arithmetic Calculation\nSlips",
         "Entity / Premise\nConfusion"
     ]
