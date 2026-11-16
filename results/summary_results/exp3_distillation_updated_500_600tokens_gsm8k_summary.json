@@ -1,0 +1,8 @@
+{
+  "experiment": "exp3_distillation_updated_500_600tokens",
+  "accuracy": 0.408,
+  "mean_latency_ms": 11657.07,
+  "median_latency_ms": 11364.55,
+  "mean_token_count": 407.69,
+  "n_samples": 500
+}

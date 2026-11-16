@@ -1,0 +1,8 @@
+{
+  "experiment": "exp1c_zs_cot",
+  "accuracy": 0.29,
+  "mean_latency_ms": 7234.24,
+  "median_latency_ms": 7356.02,
+  "mean_token_count": 242.52,
+  "n_samples": 100
+}

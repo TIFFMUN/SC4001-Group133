@@ -1,0 +1,8 @@
+{
+  "experiment": "exp7_boxed_distillation",
+  "accuracy": 0.392,
+  "mean_latency_ms": 7367.53,
+  "median_latency_ms": 6676.82,
+  "mean_token_count": 242.36,
+  "n_samples": 500
+}

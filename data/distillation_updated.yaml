@@ -1,0 +1,28 @@
+teacher:
+  model: qwen/qwen3.8-27b
+  temperature: 0.7
+  max_tokens: 512
+  requests_per_minute: 30
+dataset:
+  name: openai/gsm8k
+  split: main
+  train_split: train
+  max_samples: 1000
+output:
+  raw_traces: data/traces/raw_traces.jsonl
+  filtered_traces: data/traces/filtered_traces.jsonl
+  dataset_dir: data/processed/
+splits:
+  train: 0.9
+  val: 0.1
+prompt_template: 'You are a helpful math tutor. Solve the following problem step by
+  step.
+
+  Show your reasoning clearly. At the end, write your final answer as:
+
+  #### <number>
+
+
+  Problem: {question}
+
+  '

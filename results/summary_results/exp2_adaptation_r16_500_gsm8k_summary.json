@@ -1,8 +1,0 @@
-{
-  "experiment": "exp2_adaptation_r16_500",
-  "accuracy": 0.312,
-  "mean_latency_ms": 4717.55,
-  "median_latency_ms": 4232.77,
-  "mean_token_count": 112.87,
-  "n_samples": 500
-}

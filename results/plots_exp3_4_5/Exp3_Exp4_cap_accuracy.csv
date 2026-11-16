@@ -1,0 +1,5 @@
+Model,Length,N,Accuracy (%)
+Exp 3 (D1),<600 tokens,447,45.63758389261745
+Exp 3 (D1),600 tokens (cap),53,0.0
+Exp 4 (D2),<600 tokens,469,38.16631130063966
+Exp 4 (D2),600 tokens (cap),31,0.0

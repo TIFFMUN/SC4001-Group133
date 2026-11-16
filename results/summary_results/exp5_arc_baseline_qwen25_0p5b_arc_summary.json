@@ -1,0 +1,9 @@
+{
+  "experiment": "exp5_arc_baseline_qwen25_0p5b",
+  "dataset": "ARC-Challenge",
+  "model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "checkpoint_path": null,
+  "n_samples": 1172,
+  "correct_answers": 401,
+  "accuracy": 0.34215017064846415
+}

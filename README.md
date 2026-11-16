@@ -62,63 +62,54 @@ Each notebook handles Drive mounting, repo cloning, and dependency installation.
 
 ## Reproducing Results
 
-### Step 1 — Generate distillation data (Member A)
+**Recommended: Use the Jupyter notebooks on Google Colab or Kaggle** (they handle dependencies, Drive mounting, and API configuration automatically).
+
+### Notebook Workflow (Recommended)
+
+1. **Notebook 01** — `notebooks/01_generate_distillation_data.ipynb` (Member A)
+   - Generates teacher-rationale traces using Groq API
+   - Filters traces by answer correctness
+   - Builds D1 (unfiltered) and D2 (filtered) datasets
+
+2. **Notebook 02** — `notebooks/02_finetune_student.ipynb` (Member B)
+   - Fine-tunes Qwen2.5-0.5B using LoRA on three supervision sources:
+     - Exp 2: Human-annotated GSM8K solutions
+     - Exp 3: Unfiltered teacher rationales (D1)
+     - Exp 4: Filtered teacher rationales (D2)
+
+3. **Notebook 03** — `notebooks/03_evaluate_all.ipynb` (Member C)
+   - Evaluates all experiments (Exp 0–6) on GSM8K and ARC-Challenge
+   - Generates per-experiment result CSVs
+   - Implements the inference-gated budget router (Exp 6)
+
+4. **Notebook 04** — `notebooks/04_analysis_plots.ipynb`
+   - Loads result CSVs and generates comparison plots
+   - Computes Pareto frontier for Exp 6
+
+### Local Command-Line (Advanced)
+
+If running locally (requires HuggingFace login and Groq API key):
+
 ```bash
-# Set GROQ_API_KEY in .env first
+git clone <this-repo> && cd SC4001-Group133
+pip install -r requirements.txt
+export HF_TOKEN=<your-huggingface-token>
+export GROQ_API_KEY=<your-groq-api-key>
+
+# Generate distillation data
 python -m src.distillation.generate_traces
 python -m src.distillation.filter_traces
-python -m src.distillation.build_dataset           # D1 all traces
-python -m src.distillation.build_dataset --filtered  # D2 filtered traces
+
+# Fine-tune (Exp 2, 3, 4)
+# Edit configs/finetune.yaml to set data.mode
+python -m src.training.finetune
+
+# Evaluate
+python -m src.evaluation.eval_gsm8k --experiment exp0_zero_shot --max_samples 500
+python -m src.evaluation.eval_router --experiment exp6_router --max_samples 30
 ```
 
-### Step 2 — Fine-tune student (Member B, on Colab)
-Edit `configs/finetune.yaml` to set `data.mode`, then run notebook `02_finetune_student.ipynb`.
-
-| Experiment | `data.mode` | `training.output_dir` |
-|---|---|---|
-| Exp 2 | `adaptation` | `results/checkpoints/adaptation` |
-| Exp 3 | `distillation` | `results/checkpoints/distillation` |
-| Exp 4 | `filtered` | `results/checkpoints/filtered` |
-
-### Step 3 — Evaluate (Member C)
-
-#### Phase 1: 100-Sample Quick Screening (256-token limit)
-```bash
-# Evaluate GSM8K Zero-Shot (Exp 0)
-python -m src.evaluation.eval_gsm8k --experiment exp0_zero_shot --max_samples 100
-
-# Evaluate GSM8K 4-Shot CoT (Exp 1)
-python -m src.evaluation.eval_gsm8k --experiment exp1_few_shot --few_shot --max_samples 100
-
-# Evaluate GSM8K LoRA Adaptation (Exp 2)
-python -m src.evaluation.eval_gsm8k --experiment exp2_adaptation_r16 --checkpoint results/checkpoints/lora_r16 --max_samples 100
-
-# Evaluate Inference Budget Router Sweep (Exp 6)
-python -m src.evaluation.eval_router --experiment exp6_router --checkpoint results/checkpoints/lora_r16 --max_samples 100
-```
-
-#### Phase 2: Full-Scale Benchmark (600-token budget, 500+ samples)
-```bash
-# Full GSM8K Zero-Shot Base (Exp 0, 500 samples, 600 tokens)
-python -m src.evaluation.eval_gsm8k --experiment exp0_zero_shot_500 --max_samples 500
-
-# Full GSM8K LoRA Adaptation (Exp 2, 500 samples, 600 tokens)
-python -m src.evaluation.eval_gsm8k --experiment exp2_adaptation_r16_500 --checkpoint results/checkpoints/lora_r16 --max_samples 500
-
-# Full GSM8K Distillation All Traces (Exp 3, 500 samples, 600 tokens)
-python -m src.evaluation.eval_gsm8k --experiment exp3_distillation_500 --checkpoint results/checkpoints/distillation --max_samples 500
-
-# Full GSM8K Distillation Filtered Traces (Exp 4, 500 samples, 600 tokens)
-python -m src.evaluation.eval_gsm8k --experiment exp4_filtered_500 --checkpoint results/checkpoints/filtered --max_samples 500
-
-# Full ARC-Challenge Cross-Task Transfer (Exp 5, all 1,172 test samples)
-python -m src.evaluation.eval_arc --experiment exp5_arc_challenge --checkpoint results/checkpoints/distillation
-```
-
-Or run `notebooks/03_evaluate_updaredall.ipynb` on Google Colab or Kaggle.
-
-### Step 4 — Plots
-Run `notebooks/04_analysis_plots.ipynb` after all CSVs are in `results/`.
+Note: Python script execution may require additional environment setup. Notebooks are preferred.
 
 ### Docker (reproducible eval)
 ```bash

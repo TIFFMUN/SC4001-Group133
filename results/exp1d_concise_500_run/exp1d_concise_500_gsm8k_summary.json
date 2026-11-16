@@ -1,0 +1,8 @@
+{
+  "experiment": "exp1d_concise_500",
+  "accuracy": 0.182,
+  "mean_latency_ms": 6553.9,
+  "median_latency_ms": 6838.19,
+  "mean_token_count": 218.73,
+  "n_samples": 500
+}

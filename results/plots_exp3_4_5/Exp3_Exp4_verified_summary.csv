@@ -1,0 +1,3 @@
+Model,N,Correct,Accuracy (%),Mean tokens,Median tokens,Mean latency (s),At cap (N),At cap (%),Cap responses correct
+Exp 3 — D1,500,204,40.8,407.692,396.0,11.657069794456033,53,10.6,0
+Exp 4 — D2,500,179,35.8,391.132,376.0,11.494743897906014,31,6.2,0

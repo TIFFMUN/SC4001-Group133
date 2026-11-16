@@ -1,0 +1,8 @@
+{
+  "experiment": "exp1e_format_reinforced",
+  "accuracy": 0.446,
+  "mean_latency_ms": 9280.99,
+  "median_latency_ms": 8732.64,
+  "mean_token_count": 315.58,
+  "n_samples": 500
+}

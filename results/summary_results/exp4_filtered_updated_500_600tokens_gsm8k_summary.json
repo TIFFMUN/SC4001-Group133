@@ -1,0 +1,8 @@
+{
+  "experiment": "exp4_filtered_updated_500_600tokens",
+  "accuracy": 0.358,
+  "mean_latency_ms": 11494.74,
+  "median_latency_ms": 10996.21,
+  "mean_token_count": 391.13,
+  "n_samples": 500
+}

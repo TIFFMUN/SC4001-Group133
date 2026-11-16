@@ -1,0 +1,8 @@
+{
+  "experiment": "exp5_arc_exp4_updated_600tokens",
+  "accuracy": 0.3438566552901024,
+  "mean_latency_ms": 132.76691017487073,
+  "median_latency_ms": 123.90998049977496,
+  "mean_token_count": 25.04778156996587,
+  "n_samples": 1172
+}

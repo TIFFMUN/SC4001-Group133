@@ -1,0 +1,8 @@
+{
+  "experiment": "exp4_original_100traces_test100_600tokens",
+  "accuracy": 0.15,
+  "mean_latency_ms": 5180.38,
+  "median_latency_ms": 252.61,
+  "mean_token_count": 180.44,
+  "n_samples": 100
+}

@@ -1,0 +1,33 @@
+arc:
+  batch_size: 8
+  config: ARC-Challenge
+  dataset: allenai/ai2_arc
+  max_samples: null
+  split: test
+benchmarks:
+  arc: true
+  gsm8k: true
+generation:
+  do_sample: false
+  max_new_tokens: 600
+  temperature: 1.0
+gsm8k:
+  batch_size: 8
+  dataset: openai/gsm8k
+  max_samples: 500
+  split: test
+model:
+  base_model: Qwen/Qwen2.5-0.5B-Instruct
+  checkpoint_path: null
+output:
+  results_dir: /content/drive/MyDrive/SC4001/results/exp0_100_updated_run
+  results_file: results.csv
+router:
+  checkpoint_path: results/checkpoints/filtered
+  easy_max_tokens: 256
+  enabled: true
+  hard_max_tokens: 600
+  max_samples: 200
+  threshold_max: null
+  threshold_min: null
+  threshold_steps: 10
