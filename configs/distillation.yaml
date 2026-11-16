@@ -35,8 +35,7 @@ splits:
 # The system prompt sent to the teacher for CoT trace generation
 # TODO: experiment with different prompt templates and observe trace quality
 prompt_template: |
-  You are a helpful math tutor. Solve the following problem step by step.
-  Show your reasoning clearly. At the end, write your final answer as:
-  #### <number>
+  Solve the following math problem. Be concise — show only the key steps.
+  End your answer with \boxed{number} on the last line.
 
   Problem: {question}

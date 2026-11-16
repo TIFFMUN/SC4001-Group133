@@ -31,6 +31,9 @@ def load_config(config_path: str = "configs/distillation.yaml") -> dict:
         return yaml.safe_load(f)
 
 
+_extract_counts = {"hash": 0, "boxed": 0, "none": 0}
+
+
 def extract_answer(text: str) -> str | None:
     """
     Extract the final numeric answer from a GSM8K-style response.
@@ -46,14 +49,34 @@ def extract_answer(text: str) -> str | None:
     # Primary: look for #### pattern (standard GSM8K format)
     match = re.search(r"####\s*([\d,\.\-]+)", text)
     if match:
+        _extract_counts["hash"] += 1
         return match.group(1).replace(",", "").strip()
 
-    # Fallback: last standalone number in the text
-    numbers = re.findall(r"\b\d+(?:\.\d+)?\b", text)
-    if numbers:
-        return numbers[-1].strip()
+    # Secondary: look for \boxed{number} (base model / concise teacher format)
+    match = re.search(r"\\boxed\{([\d,\.\-]+)\}", text)
+    if match:
+        _extract_counts["boxed"] += 1
+        return match.group(1).replace(",", "").strip()
 
+    # # Fallback: last standalone number in the text
+    # numbers = re.findall(r"\b\d+(?:\.\d+)?\b", text)
+    # if numbers:
+    #     return numbers[-1].strip()
+
+    _extract_counts["none"] += 1
     return None
+
+
+def log_extract_counts() -> None:
+    total = sum(_extract_counts.values())
+    if total == 0:
+        return
+    logger.info(
+        f"extract_answer pattern breakdown ({total} calls): "
+        f"####={_extract_counts['hash']} ({_extract_counts['hash']/total:.1%}), "
+        f"\\boxed={{}}={_extract_counts['boxed']} ({_extract_counts['boxed']/total:.1%}), "
+        f"none={_extract_counts['none']} ({_extract_counts['none']/total:.1%})"
+    )
 
 
 def answers_match(predicted: str | None, ground_truth: str) -> bool:
@@ -117,6 +140,7 @@ def filter_traces(config_path: str = "configs/distillation.yaml") -> None:
         f"No answer found: {no_answer}. "
         f"Filtered traces saved to {filtered_path}."
     )
+    log_extract_counts()
 
     # TODO: log this filter rate to results/ for inclusion in the report table
     # TODO: investigate what % of dropped traces had a wrong answer vs no answer at all
