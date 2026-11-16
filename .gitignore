@@ -30,6 +30,7 @@ results/models/
 # Distillation traces (generated, not source code)
 data/traces/
 data/raw/
+data/processed/
 data/*.jsonl
 data/*.json
 
