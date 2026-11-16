@@ -46,6 +46,7 @@ def compute_complexity(
     """
     input_len = inputs["input_ids"].shape[1]
 
+    model.eval()
     with torch.no_grad():
         outputs = model(**inputs, labels=inputs["input_ids"])
 
@@ -94,6 +95,7 @@ class BudgetRouter:
             gen_kwargs = self.hard_kwargs
 
         t0 = time.perf_counter()
+        self.model.eval()
         with torch.no_grad():
             output_ids = self.model.generate(
                 **inputs,
